@@ -1,26 +1,314 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F4F7FA;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logo-container {
+    flex-shrink: 0;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.form-container, .report-container {
+  width: 100%;
+  max-width: 900px;
+  background: #FFFFFF;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+}
+
+.page-title {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #2D3748;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #4A5568;
+}
+
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: box-shadow 0.2s;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline: none;
+  border-color: #3182CE;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.data-table th {
+  font-weight: 600;
+  color: #718096;
+}
+
+.data-table input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #CBD5E0;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: #3182CE;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #2B6CB0;
+}
+
+/* Report Page Styles */
+.report-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #E2E8F0;
+  padding-bottom: 1rem;
+}
+
+.report-date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.report-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2D3748;
+}
+
+.report-header p {
+  font-size: 1.2rem;
+  color: #718096;
+  margin: 0;
+}
+
+.report-section {
+  margin-bottom: 2.5rem;
+}
+
+.report-section h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #4A5568;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 0.5rem;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.report-table th, .report-table td {
+  padding: 1rem 1.2rem;
+  border: 1px solid #E2E8F0;
+  text-align: left;
+}
+
+.report-table th {
+  background-color: #F7FAFC;
+  font-weight: 600;
+}
+
+.report-section p {
+    font-size: 1.1rem;
+    padding: 1rem;
+    background: #F7FAFC;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    margin-top: 0;
+}
+
+.report-footer {
+  margin-top: 3rem;
+  text-align: center;
+  color: #A0AEC0;
+  font-style: italic;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.export-btn, .print-btn {
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.export-btn {
+  background-color: #047857; /* Emerald Green */
+}
+
+.export-btn:hover {
+  background-color: #065F46; /* Darker Emerald */
+}
+
+.print-btn {
+    background-color: #3B82F6; /* Blue */
+}
+
+.print-btn:hover {
+    background-color: #2563EB; /* Darker Blue */
+}
+
+.difference-card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.language-switcher {
+    background-color: #3182CE;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.language-switcher:hover {
+    background-color: #2B6CB0;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.grid-container-report {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.grid-container-report h2 {
+    border-bottom: none;
+}
+
+.date-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.day-display {
+    font-weight: 600;
+    color: #4A5568;
+    background-color: #F7FAFC;
+    padding: 0.75rem 1rem;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+}
+
+.rtl {
+    direction: rtl;
+}
+
+.rtl .app-header {
+    flex-direction: row-reverse;
+}
+
+.rtl .data-table th, .rtl .data-table td {
+    text-align: right;
+}
+
+.rtl .report-table th, .rtl .report-table td {
+    text-align: right;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .report-container, .report-container * {
+        visibility: visible;
+    }
+    .report-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 1rem;
+    }
+    .report-footer {
+        display: none;
+    }
 }
