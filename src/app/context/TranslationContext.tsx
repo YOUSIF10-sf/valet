@@ -1,15 +1,24 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const TranslationContext = createContext();
+type TranslationContextType = {
+  language: string;
+  toggleLanguage: () => void;
+};
 
-export function useTranslation() {
-  return useContext(TranslationContext);
+const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
+
+export function useTranslation(): TranslationContextType {
+  const ctx = useContext(TranslationContext);
+  if (!ctx) {
+    throw new Error('useTranslation must be used within a TranslationProvider');
+  }
+  return ctx;
 }
 
-export function TranslationProvider({ children }) {
-  const [language, setLanguage] = useState('en');
+export function TranslationProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguage] = useState<string>('en');
 
   useEffect(() => {
     if (language === 'ar') {
