@@ -9,11 +9,8 @@ type Props = {
 };
 
 export default function AppBody({ children }: Props) {
-  // Safely type the translation context so we can remove @ts-ignore
-  const ctx = useTranslation() as { language?: string } | undefined;
-  const language = ctx?.language ?? 'en';
+  const { language } = useTranslation();
 
-  // Use a wrapper element instead of returning <body>.
   return (
     <div
       className={language === 'ar' ? 'rtl' : 'ltr'}
