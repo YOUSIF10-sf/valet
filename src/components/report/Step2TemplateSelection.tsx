@@ -1,50 +1,60 @@
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { cn } from "@/lib/utils";
-import { CheckCircle2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "../ui/button";
+import { Download } from "lucide-react";
 
-interface Step2TemplateSelectionProps {
-    selectedTemplate: string | null;
-    onSelectTemplate: (id: string) => void;
-}
+const mockCashierData = [
+  { cashier: "أحمد علي", cars: 5, totalFees: "75.00 ر.س", visitors: 3, guests: 2 },
+  { cashier: "فاطمة محمد", cars: 8, totalFees: "120.00 ر.س", visitors: 6, guests: 2 },
+  { cashier: "خالد عبدالله", cars: 3, totalFees: "45.00 ر.س", visitors: 1, guests: 2 },
+];
 
-export function Step2TemplateSelection({ selectedTemplate, onSelectTemplate }: Step2TemplateSelectionProps) {
+export function Step2TemplateSelection() {
     return (
         <div className="text-center">
-            <h2 className="text-2xl font-bold font-headline mb-2">Select a Template</h2>
-            <p className="text-muted-foreground mb-6">Choose a pre-designed template for your report.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {PlaceHolderImages.map((template) => (
-                    <Card 
-                        key={template.id} 
-                        onClick={() => onSelectTemplate(template.id)}
-                        className={cn("cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 relative",
-                            selectedTemplate === template.id ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
-                        )}
-                    >
-                        {selectedTemplate === template.id && (
-                            <div className="absolute top-2 right-2 z-10 bg-primary rounded-full text-primary-foreground p-1">
-                                <CheckCircle2 className="h-5 w-5" />
-                            </div>
-                        )}
-                        <CardContent className="p-0">
-                            <Image
-                                src={template.imageUrl}
-                                alt={template.description}
-                                data-ai-hint={template.imageHint}
-                                width={600}
-                                height={400}
-                                className="rounded-t-lg object-cover aspect-video"
-                            />
-                            <div className="p-4 text-left">
-                                <h3 className="font-semibold font-headline">{template.name}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-right">جدول إيرادات الكاشيرات</h2>
+                    <p className="text-muted-foreground text-right">عرض تفاصيل الإيرادات لكل كاشير.</p>
+                </div>
+                <Button variant="outline">
+                    <Download className="ml-2 h-4 w-4" />
+                    تصدير Excel
+                </Button>
             </div>
+            <Card>
+                <CardContent className="p-0">
+                   <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>اسم الكاشير</TableHead>
+                            <TableHead className="text-center">عدد السيارات</TableHead>
+                            <TableHead className="text-center">النزلاء</TableHead>
+                            <TableHead className="text-center">الزوار</TableHead>
+                            <TableHead className="text-right">إجمالي الرسوم</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {mockCashierData.map((row, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{row.cashier}</TableCell>
+                              <TableCell className="text-center">{row.cars}</TableCell>
+                              <TableCell className="text-center">{row.guests}</TableCell>
+                              <TableCell className="text-center">{row.visitors}</TableCell>
+                              <TableCell className="text-right font-mono">{row.totalFees}</TableCell>
+                            </TableRow>
+                          ))}
+                           <TableRow className="bg-muted/50 font-bold">
+                              <TableCell>الإجمالي</TableCell>
+                              <TableCell className="text-center">16</TableCell>
+                              <TableCell className="text-center">6</TableCell>
+                              <TableCell className="text-center">10</TableCell>
+                              <TableCell className="text-right font-mono">240.00 ر.س</TableCell>
+                            </TableRow>
+                        </TableBody>
+                      </Table>
+                </CardContent>
+            </Card>
         </div>
     );
 }

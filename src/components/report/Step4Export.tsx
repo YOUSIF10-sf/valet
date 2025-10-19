@@ -10,21 +10,21 @@ export function Step4Export({ onReset }: Step4ExportProps) {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center">
             <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold font-headline mb-2">Your Report is Ready!</h2>
-            <p className="text-muted-foreground mb-8">Download your generated report in your desired format.</p>
+            <h2 className="text-2xl font-bold mb-2">تقريرك جاهز!</h2>
+            <p className="text-muted-foreground mb-8">حمّل التقرير الذي تم إنشاؤه بالصيغة التي تفضلها.</p>
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Button size="lg" className="w-full sm:w-auto">
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Excel (.xlsx)
+                    <Download className="ml-2 h-5 w-5" />
+                    تحميل Excel (.xlsx)
                 </Button>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                    <Download className="mr-2 h-5 w-5" />
-                    Download PDF (.pdf)
+                    <Download className="ml-2 h-5 w-5" />
+                    تحميل PDF (.pdf)
                 </Button>
             </div>
             <Button variant="ghost" onClick={onReset}>
-                <Repeat className="mr-2 h-4 w-4" />
-                Create Another Report
+                <Repeat className="ml-2 h-4 w-4" />
+                إنشاء تقرير آخر
             </Button>
         </div>
     );
