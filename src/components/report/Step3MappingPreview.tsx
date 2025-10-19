@@ -154,6 +154,7 @@ export function Step3MappingPreview({ reportData, revenueData }: PreviewProps) {
                                 {hotels.map(hotel => {
                                     const revenue = revenueData.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
                                     const total = (revenue.parking || 0) + (revenue.valet || 0);
+                                    if (!total && !revenue.cars) return null;
                                     return (
                                         <TableRow key={hotel}>
                                             <TableCell className="font-medium">{hotel}</TableCell>
