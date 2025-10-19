@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,17 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
-import { suggestNotes } from "@/ai/flows/suggest-notes-flow";
-import { SuggestNotesInputSchema } from "@/ai/schemas/suggest-notes-schemas";
 
 const hotels = [
   "ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"
 ];
 
-const reportSchema = SuggestNotesInputSchema.extend({
+const reportSchema = z.object({
   date: z.string().min(1, "التاريخ مطلوب"),
+  hotel: z.string().min(1, "الفندق مطلوب"),
+  reportType: z.string(),
+  attendanceCount: z.coerce.number(),
+  absenceCount: z.coerce.number(),
+  supervisorName: z.string().min(1, "اسم المشرف مطلوب"),
   notes: z.string().optional(),
 });
 
@@ -27,7 +27,6 @@ const reportSchema = SuggestNotesInputSchema.extend({
 type ReportFormValues = z.infer<typeof reportSchema>;
 
 export function Step1DataInput() {
-  const [isSuggesting, setIsSuggesting] = useState(false);
   const methods = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
@@ -40,28 +39,6 @@ export function Step1DataInput() {
       notes: "",
     },
   });
-
-  const handleSuggestNotes = async () => {
-    setIsSuggesting(true);
-    const values = methods.getValues();
-    try {
-      const suggestion = await suggestNotes({
-        reportType: values.reportType,
-        attendanceCount: values.attendanceCount,
-        absenceCount: values.absenceCount,
-        supervisorName: values.supervisorName,
-        hotel: values.hotel,
-      });
-      if (suggestion.notes) {
-        methods.setValue("notes", suggestion.notes);
-      }
-    } catch (error) {
-      console.error("Failed to get suggestion:", error);
-    } finally {
-      setIsSuggesting(false);
-    }
-  };
-
 
   return (
     <FormProvider {...methods}>
@@ -125,14 +102,6 @@ export function Step1DataInput() {
           <div className="lg:col-span-3 space-y-2">
              <div className="flex justify-between items-center">
                 <Label htmlFor="notes">الملاحظات</Label>
-                <Button variant="ghost" size="sm" onClick={handleSuggestNotes} disabled={isSuggesting}>
-                  {isSuggesting ? (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="ml-2 h-4 w-4 text-accent" />
-                  )}
-                  اقتراح ملاحظات
-                </Button>
             </div>
             <Controller name="notes" control={methods.control} render={({ field }) => <Textarea id="notes" placeholder="أضف أي ملاحظات هنا..." {...field} />} />
           </div>
