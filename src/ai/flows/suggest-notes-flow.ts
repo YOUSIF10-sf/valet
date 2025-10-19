@@ -3,26 +3,11 @@
  * @fileOverview Flow for generating smart suggestions for report notes.
  *
  * - suggestNotes - A function that suggests notes based on report data.
- * - SuggestNotesInput - The input type for the suggestNotes function.
- * - SuggestNotesOutput - The return type for the suggestNotes function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {SuggestNotesInputSchema, SuggestNotesOutputSchema, type SuggestNotesInput, type SuggestNotesOutput} from '@/ai/schemas/suggest-notes-schemas';
 
-export const SuggestNotesInputSchema = z.object({
-  reportType: z.string().describe('The type of the report (daily or monthly).'),
-  attendanceCount: z.number().describe('The number of employees present.'),
-  absenceCount: z.number().describe('The number of employees absent.'),
-  supervisorName: z.string().describe('The name of the supervisor.'),
-  hotel: z.string().describe('The name of the hotel.'),
-});
-export type SuggestNotesInput = z.infer<typeof SuggestNotesInputSchema>;
-
-export const SuggestNotesOutputSchema = z.object({
-  notes: z.string().describe('The suggested notes for the report.'),
-});
-export type SuggestNotesOutput = z.infer<typeof SuggestNotesOutputSchema>;
 
 export async function suggestNotes(input: SuggestNotesInput): Promise<SuggestNotesOutput> {
   return suggestNotesFlow(input);

@@ -12,20 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { suggestNotes } from "@/ai/flows/suggest-notes-flow";
+import { SuggestNotesInputSchema } from "@/ai/schemas/suggest-notes-schemas";
 
 const hotels = [
   "ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"
 ];
 
-const reportSchema = z.object({
+const reportSchema = SuggestNotesInputSchema.extend({
   date: z.string().min(1, "التاريخ مطلوب"),
-  hotel: z.string().min(1, "اسم الفندق مطلوب"),
-  reportType: z.string().min(1, "نوع التقرير مطلوب"),
-  attendanceCount: z.coerce.number().min(0, "يجب أن يكون رقماً إيجابياً"),
-  absenceCount: z.coerce.number().min(0, "يجب أن يكون رقماً إيجابياً"),
-  supervisorName: z.string().min(1, "اسم المشرف مطلوب"),
   notes: z.string().optional(),
 });
+
 
 type ReportFormValues = z.infer<typeof reportSchema>;
 
@@ -48,7 +45,13 @@ export function Step1DataInput() {
     setIsSuggesting(true);
     const values = methods.getValues();
     try {
-      const suggestion = await suggestNotes(values);
+      const suggestion = await suggestNotes({
+        reportType: values.reportType,
+        attendanceCount: values.attendanceCount,
+        absenceCount: values.absenceCount,
+        supervisorName: values.supervisorName,
+        hotel: values.hotel,
+      });
       if (suggestion.notes) {
         methods.setValue("notes", suggestion.notes);
       }
