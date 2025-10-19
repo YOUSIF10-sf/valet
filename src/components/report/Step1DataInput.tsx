@@ -1,6 +1,5 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -31,37 +30,33 @@ export function Step1DataInput() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="employee-name">اسم الموظف</Label>
-          <Input id="employee-name" placeholder="مثال: محمد أحمد" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="car-count">عدد السيارات</Label>
-          <Input id="car-count" type="number" placeholder="0" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="car-type">نوع السيارة</Label>
+         <div className="space-y-2">
+          <Label htmlFor="shift">الفترة</Label>
           <Select dir="rtl">
-            <SelectTrigger id="car-type">
-              <SelectValue placeholder="اختر النوع" />
+            <SelectTrigger id="shift">
+              <SelectValue placeholder="اختر الفترة" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="visitor">زائر</SelectItem>
-              <SelectItem value="guest">نزيل</SelectItem>
+              <SelectItem value="morning">صباحية</SelectItem>
+              <SelectItem value="evening">مسائية</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="parking-duration">مدة وقوف السيارة</Label>
-          <Input id="parking-duration" placeholder="مثال: 3 ساعات" />
+          <Label htmlFor="attendance-count">عدد الحضور</Label>
+          <Input id="attendance-count" type="number" placeholder="0" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="absence-count">عدد الغيابات</Label>
+          <Input id="absence-count" type="number" placeholder="0" />
+        </div>
+         <div className="space-y-2">
+          <Label htmlFor="supervisor-name">اسم المشرف</Label>
+          <Input id="supervisor-name" placeholder="مثال: عبدالله سالم" />
         </div>
         <div className="lg:col-span-3 space-y-2">
           <Label htmlFor="notes">الملاحظات</Label>
           <Textarea id="notes" placeholder="أضف أي ملاحظات هنا..." />
-        </div>
-        <div className="lg:col-span-3 space-y-2">
-          <Label htmlFor="cashier-name">اسم الكاشير (في حال وجود عجز)</Label>
-          <Input id="cashier-name" placeholder="اكتب اسم الكاشير فقط عند وجود عجز" />
         </div>
       </div>
     </div>
