@@ -1,44 +1,51 @@
 "use client";
-import { useState } from "react";
+import { hotels } from './Step1DataInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const hotels = [
-  "ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"
-];
-
-type RevenueData = {
+type HotelRevenue = {
   cars: number;
   parking: number;
   valet: number;
 };
 
-export function Step2TemplateSelection() {
-    const [revenue, setRevenue] = useState<Record<string, RevenueData>>(
-      hotels.reduce((acc, hotel) => ({ ...acc, [hotel]: { cars: 0, parking: 0, valet: 0 } }), {})
-    );
-    const [exemptedCars, setExemptedCars] = useState(0);
-    const [exemptionReason, setExemptionReason] = useState("");
-    const [mistakeCars, setMistakeCars] = useState(0);
-    const [totalCash, setTotalCash] = useState(0);
-    const [totalNetwork, setTotalNetwork] = useState(0);
+export type RevenueData = {
+    revenueByHotel: Record<string, HotelRevenue>;
+    exemptedCars: number;
+    exemptionReason: string;
+    mistakeCars: number;
+    totalCash: number;
+    totalNetwork: number;
+};
 
-    const handleRevenueChange = (hotel: string, field: keyof RevenueData, value: string) => {
+interface Step2Props {
+  data: RevenueData;
+  onDataChange: (data: RevenueData) => void;
+}
+
+export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
+
+    const handleRevenueChange = (hotel: string, field: keyof HotelRevenue, value: string) => {
         const numericValue = parseInt(value, 10) || 0;
-        setRevenue(prev => ({
-            ...prev,
-            [hotel]: {
-                ...prev[hotel],
-                [field]: numericValue
+        const hotelData = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
+        onDataChange({
+            ...data,
+            revenueByHotel: {
+                ...data.revenueByHotel,
+                [hotel]: { ...hotelData, [field]: numericValue }
             }
-        }));
+        });
+    };
+    
+    const handleFieldChange = (field: keyof RevenueData, value: string | number) => {
+        onDataChange({ ...data, [field]: value });
     };
 
-    const tableTotal = Object.values(revenue).reduce((acc, { parking, valet }) => acc + parking + valet, 0);
-    const cashNetworkTotal = totalCash + totalNetwork;
+    const tableTotal = Object.values(data.revenueByHotel).reduce((acc, { parking, valet }) => acc + (parking || 0) + (valet || 0), 0);
+    const cashNetworkTotal = (data.totalCash || 0) + (data.totalNetwork || 0);
     const difference = tableTotal - cashNetworkTotal;
 
     return (
@@ -66,22 +73,23 @@ export function Step2TemplateSelection() {
                                 </TableHeader>
                                 <TableBody>
                                     {hotels.map(hotel => {
-                                        const total = (revenue[hotel]?.parking || 0) + (revenue[hotel]?.valet || 0);
+                                        const revenue = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
+                                        const total = (revenue.parking || 0) + (revenue.valet || 0);
                                         return (
                                             <TableRow key={hotel}>
                                                 <TableCell className="font-medium">{hotel}</TableCell>
-                                                <TableCell><Input type="number" className="min-w-[80px]" value={revenue[hotel]?.cars || ''} onChange={e => handleRevenueChange(hotel, 'cars', e.target.value)} /></TableCell>
-                                                <TableCell><Input type="number" className="min-w-[100px]" value={revenue[hotel]?.parking || ''} onChange={e => handleRevenueChange(hotel, 'parking', e.target.value)} /></TableCell>
-                                                <TableCell><Input type="number" className="min-w-[100px]" value={revenue[hotel]?.valet || ''} onChange={e => handleRevenueChange(hotel, 'valet', e.target.value)} /></TableCell>
+                                                <TableCell><Input type="number" className="min-w-[80px]" value={revenue.cars || ''} onChange={e => handleRevenueChange(hotel, 'cars', e.target.value)} /></TableCell>
+                                                <TableCell><Input type="number" className="min-w-[100px]" value={revenue.parking || ''} onChange={e => handleRevenueChange(hotel, 'parking', e.target.value)} /></TableCell>
+                                                <TableCell><Input type="number" className="min-w-[100px]" value={revenue.valet || ''} onChange={e => handleRevenueChange(hotel, 'valet', e.target.value)} /></TableCell>
                                                 <TableCell className="text-right font-mono">{total.toFixed(2)}</TableCell>
                                             </TableRow>
                                         );
                                     })}
                                      <TableRow className="bg-muted/50 font-bold">
                                         <TableCell>الإجمالي</TableCell>
-                                        <TableCell>{Object.values(revenue).reduce((acc, { cars }) => acc + cars, 0)}</TableCell>
-                                        <TableCell className="font-mono">{Object.values(revenue).reduce((acc, { parking }) => acc + parking, 0).toFixed(2)}</TableCell>
-                                        <TableCell className="font-mono">{Object.values(revenue).reduce((acc, { valet }) => acc + valet, 0).toFixed(2)}</TableCell>
+                                        <TableCell>{Object.values(data.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0)}</TableCell>
+                                        <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0).toFixed(2)}</TableCell>
+                                        <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0).toFixed(2)}</TableCell>
                                         <TableCell className="text-right font-mono">{tableTotal.toFixed(2)}</TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -96,15 +104,15 @@ export function Step2TemplateSelection() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="exempted-cars">عدد السيارات المعفاة</Label>
-                                <Input id="exempted-cars" type="number" value={exemptedCars} onChange={e => setExemptedCars(parseInt(e.target.value) || 0)} />
+                                <Input id="exempted-cars" type="number" value={data.exemptedCars || ''} onChange={e => handleFieldChange('exemptedCars', parseInt(e.target.value) || 0)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="exemption-reason">سبب الإعفاء</Label>
-                                <Textarea id="exemption-reason" value={exemptionReason} onChange={e => setExemptionReason(e.target.value)} />
+                                <Textarea id="exemption-reason" value={data.exemptionReason || ''} onChange={e => handleFieldChange('exemptionReason', e.target.value)} />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="mistake-cars">عدد السيارات المطلوبة بالخطأ</Label>
-                                <Input id="mistake-cars" type="number" value={mistakeCars} onChange={e => setMistakeCars(parseInt(e.target.value) || 0)} />
+                                <Input id="mistake-cars" type="number" value={data.mistakeCars || ''} onChange={e => handleFieldChange('mistakeCars', parseInt(e.target.value) || 0)} />
                             </div>
                         </CardContent>
                     </Card>
@@ -114,11 +122,11 @@ export function Step2TemplateSelection() {
                         <CardContent className="space-y-4">
                              <div className="space-y-2">
                                 <Label htmlFor="total-cash">إجمالي الكاش</Label>
-                                <Input id="total-cash" type="number" value={totalCash} onChange={e => setTotalCash(parseFloat(e.target.value) || 0)} />
+                                <Input id="total-cash" type="number" value={data.totalCash || ''} onChange={e => handleFieldChange('totalCash', parseFloat(e.target.value) || 0)} />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="total-network">إجمالي الشبكة</Label>
-                                <Input id="total-network" type="number" value={totalNetwork} onChange={e => setTotalNetwork(parseFloat(e.target.value) || 0)} />
+                                <Input id="total-network" type="number" value={data.totalNetwork || ''} onChange={e => handleFieldChange('totalNetwork', parseFloat(e.target.value) || 0)} />
                             </div>
                             <div className="flex justify-between items-center font-bold p-2 bg-muted rounded-md">
                                 <span>المجموع:</span>
@@ -131,7 +139,7 @@ export function Step2TemplateSelection() {
                         <CardHeader className="p-4">
                            <CardTitle className="text-base">الفرق</CardTitle>
                            <CardDescription>الفرق بين إجمالي الإيرادات وإجمالي الدفع</CardDescription>
-                        </CardHeader>
+                        </Header>
                         <CardContent className="p-4 pt-0">
                            <p className={`text-2xl font-bold font-mono text-center ${difference !== 0 ? 'text-destructive' : 'text-green-500'}`}>
                              {difference.toFixed(2)} ر.س
