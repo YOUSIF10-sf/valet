@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Download, Printer, Repeat } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
-import { ReportData } from "./Step1DataInput";
+import { ReportData, hotels } from "./Step1DataInput";
 import { RevenueData } from "./Step2TemplateSelection";
-import { hotels } from "./Step1DataInput";
 import * as XLSX from 'xlsx';
 
 
@@ -54,7 +53,7 @@ export function Step4Export({ onReset, reportData, revenueData }: Step4ExportPro
             ["تقرير صف السيارات اليومي"],
             [],
             ["التاريخ:", reportData.date],
-            ["الفندق الرئيسي:", reportData.hotel],
+            ["اسم المشروع:", reportData.projectName],
             ["المشرف:", reportData.supervisorName],
             [],
             ["الحضور والغياب"],

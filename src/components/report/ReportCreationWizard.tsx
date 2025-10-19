@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useTransition } from "react";
 import { StepIndicator } from "@/components/report/StepIndicator";
@@ -31,13 +31,14 @@ export function ReportCreationWizard() {
     mistakeCars: 0,
     totalCash: 0,
     totalNetwork: 0,
+    differenceReason: "",
   });
 
   const methods = useForm<ReportData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
       date: new Date().toISOString().substring(0, 10),
-      hotel: "",
+      projectName: "",
       reportType: "daily",
       attendanceCount: 0,
       absenceCount: 0,
@@ -76,6 +77,7 @@ export function ReportCreationWizard() {
         mistakeCars: 0,
         totalCash: 0,
         totalNetwork: 0,
+        differenceReason: "",
     });
     changeStep(1);
   };

@@ -16,7 +16,7 @@ export const hotels = [
 
 export const reportSchema = z.object({
   date: z.string().min(1, "التاريخ مطلوب"),
-  hotel: z.string().min(1, "الفندق مطلوب"),
+  projectName: z.string().min(1, "اسم المشروع مطلوب"),
   reportType: z.string(),
   attendanceCount: z.coerce.number().min(0, "العدد يجب أن يكون صفراً أو أكثر"),
   absenceCount: z.coerce.number().min(0, "العدد يجب أن يكون صفراً أو أكثر"),
@@ -43,22 +43,9 @@ export function Step1DataInput() {
           {errors.date && <FormMessage>{errors.date.message}</FormMessage>}
         </FormItem>
         <FormItem>
-          <Label htmlFor="hotel">الفندق</Label>
-          <Controller
-            name="hotel"
-            control={control}
-            render={({ field }) => (
-              <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger id="hotel">
-                  <SelectValue placeholder="اختر الفندق" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hotels.map(hotel => <SelectItem key={hotel} value={hotel}>{hotel}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.hotel && <FormMessage>{errors.hotel.message}</FormMessage>}
+          <Label htmlFor="projectName">اسم المشروع</Label>
+          <Controller name="projectName" control={control} render={({ field }) => <Input id="projectName" placeholder="مثال: مشروع تطوير واجهة الرياض" {...field} />} />
+          {errors.projectName && <FormMessage>{errors.projectName.message}</FormMessage>}
         </FormItem>
         <FormItem>
           <Label htmlFor="reportType">نوع التقرير</Label>

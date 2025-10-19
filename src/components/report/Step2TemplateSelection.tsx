@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { hotels } from './Step1DataInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +19,7 @@ export type RevenueData = {
     mistakeCars: number;
     totalCash: number;
     totalNetwork: number;
+    differenceReason: string;
 };
 
 interface Step2Props {
@@ -139,11 +140,21 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                         <CardHeader className="p-4">
                            <CardTitle className="text-base">الفرق</CardTitle>
                            <CardDescription>الفرق بين إجمالي الإيرادات وإجمالي الدفع</CardDescription>
-                        </Header>
-                        <CardContent className="p-4 pt-0">
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 space-y-4">
                            <p className={`text-2xl font-bold font-mono text-center ${difference !== 0 ? 'text-destructive' : 'text-green-500'}`}>
                              {difference.toFixed(2)} ر.س
                            </p>
+                           <div className="space-y-2">
+                                <Label htmlFor="difference-reason">سبب الفرق</Label>
+                                <Textarea 
+                                    id="difference-reason"
+                                    value={data.differenceReason || ''} 
+                                    onChange={e => handleFieldChange('differenceReason', e.target.value)}
+                                    placeholder="لا يوجد فرق..."
+                                    disabled={difference === 0}
+                                 />
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
