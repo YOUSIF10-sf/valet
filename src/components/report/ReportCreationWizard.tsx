@@ -22,8 +22,9 @@ const steps = [
 export function ReportCreationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPending, startTransition] = useTransition();
+  const [reportId] = useState(`VAL-${Date.now()}`); // Unique ID for the report
 
-  // State for Step 2
+  // State for Step 2 data
   const [revenueData, setRevenueData] = useState<RevenueData>({
     revenueByHotel: {},
     exemptedCars: 0,
@@ -47,6 +48,7 @@ export function ReportCreationWizard() {
     },
   });
 
+  // Watch for changes in the form data of Step 1
   const reportData = methods.watch();
 
   const changeStep = (step: number) => {
@@ -89,9 +91,10 @@ export function ReportCreationWizard() {
       case 2:
         return <Step2TemplateSelection data={revenueData} onDataChange={setRevenueData} />;
       case 3:
-        return <Step3MappingPreview reportData={reportData} revenueData={revenueData} />;
+        // Pass the collected data to the preview component
+        return <Step3MappingPreview reportData={reportData} revenueData={revenueData} reportId={reportId} />;
       case 4:
-        return <Step4Export onReset={reset} reportData={reportData} revenueData={revenueData} />;
+        return <Step4Export onReset={reset} reportData={reportData} revenueData={revenueData} reportId={reportId} />;
       default:
         return null;
     }
@@ -114,7 +117,7 @@ export function ReportCreationWizard() {
           ) : <div />}
           {currentStep < steps.length ? (
             <Button onClick={goToNext} disabled={isPending}>
-              {isPending ? "..." : "التالي"}
+              {isPending ? "جاري التحميل..." : "التالي"}
             </Button>
           ) : <div />}
         </div>

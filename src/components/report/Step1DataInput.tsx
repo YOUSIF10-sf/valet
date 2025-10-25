@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { FormItem, FormMessage } from "@/components/ui/form";
 
-
 export const hotels = [
   "ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"
 ];
@@ -17,22 +16,33 @@ export const hotels = [
 export const reportSchema = z.object({
   date: z.string().min(1, "التاريخ مطلوب"),
   projectName: z.string().min(1, "اسم المشروع مطلوب"),
-  reportType: z.string(),
+  reportType: z.string().min(1, "الرجاء اختيار نوع التقرير"),
+  shift: z.string().optional(), // Shift is optional initially
   attendanceCount: z.coerce.number().min(0, "العدد يجب أن يكون صفراً أو أكثر"),
   absenceCount: z.coerce.number().min(0, "العدد يجب أن يكون صفراً أو أكثر"),
   supervisorName: z.string().min(1, "اسم المشرف مطلوب"),
   notes: z.string().optional(),
+}).refine(data => {
+  // If reportType is daily, shift must be selected
+  if (data.reportType === 'daily') {
+    return !!data.shift;
+  }
+  return true;
+}, {
+  message: "الرجاء اختيار الوردية للتقرير اليومي",
+  path: ["shift"],
 });
 
 
 export type ReportData = z.infer<typeof reportSchema>;
 
 export function Step1DataInput() {
-  const { control, formState: { errors } } = useFormContext<ReportData>();
+  const { control, watch, formState: { errors } } = useFormContext<ReportData>();
+  const reportType = watch("reportType");
 
   return (
     <form className="w-full max-w-4xl mx-auto" onSubmit={e => e.preventDefault()}>
-      <h2 className="text-2xl font-bold text-center mb-2">إدخال تفاصيل التقرير اليومي</h2>
+      <h2 className="text-2xl font-bold text-center mb-2">إدخال تفاصيل التقرير</h2>
       <p className="text-muted-foreground text-center mb-8">
         الرجاء تعبئة الحقول التالية لإنشاء التقرير.
       </p>
@@ -64,7 +74,32 @@ export function Step1DataInput() {
               </Select>
             )}
           />
+           {errors.reportType && <FormMessage>{errors.reportType.message}</FormMessage>}
         </FormItem>
+
+        {/* Conditional Shift Field */}
+        {reportType === 'daily' && (
+          <FormItem>
+            <Label htmlFor="shift">الوردية</Label>
+            <Controller
+              name="shift"
+              control={control}
+              render={({ field }) => (
+                <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger id="shift">
+                    <SelectValue placeholder="اختر الوردية" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">صباحية</SelectItem>
+                    <SelectItem value="evening">مسائية</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.shift && <FormMessage>{errors.shift.message}</FormMessage>}
+          </FormItem>
+        )}
+
         <FormItem>
           <Label htmlFor="attendance-count">عدد الحضور</Label>
           <Controller name="attendanceCount" control={control} render={({ field }) => <Input id="attendance-count" type="number" placeholder="0" {...field} />} />

@@ -10,6 +10,7 @@ type HotelRevenue = {
   cars: number;
   parking: number;
   valet: number;
+  cashierName: string;
 };
 
 export type RevenueData = {
@@ -29,14 +30,25 @@ interface Step2Props {
 
 export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
 
-    const handleRevenueChange = (hotel: string, field: keyof HotelRevenue, value: string) => {
+    const handleRevenueChange = (hotel: string, field: 'cars' | 'parking' | 'valet', value: string) => {
         const numericValue = parseInt(value, 10) || 0;
-        const hotelData = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
+        const hotelData = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0, cashierName: '' };
         onDataChange({
             ...data,
             revenueByHotel: {
                 ...data.revenueByHotel,
                 [hotel]: { ...hotelData, [field]: numericValue }
+            }
+        });
+    };
+
+    const handleRevenueTextChange = (hotel: string, field: 'cashierName', value: string) => {
+        const hotelData = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0, cashierName: '' };
+        onDataChange({
+            ...data,
+            revenueByHotel: {
+                ...data.revenueByHotel,
+                [hotel]: { ...hotelData, [field]: value }
             }
         });
     };
@@ -66,6 +78,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[150px]">الموقع</TableHead>
+                                        <TableHead>اسم الكاشير</TableHead>
                                         <TableHead>عدد السيارات</TableHead>
                                         <TableHead>مبالغ المواقف (ر.س)</TableHead>
                                         <TableHead>مبالغ الفاليه (ر.س)</TableHead>
@@ -74,11 +87,12 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                 </TableHeader>
                                 <TableBody>
                                     {hotels.map(hotel => {
-                                        const revenue = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
+                                        const revenue = data.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0, cashierName: '' };
                                         const total = (revenue.parking || 0) + (revenue.valet || 0);
                                         return (
                                             <TableRow key={hotel}>
                                                 <TableCell className="font-medium">{hotel}</TableCell>
+                                                <TableCell><Input type="text" className="min-w-[120px]" value={revenue.cashierName || ''} onChange={e => handleRevenueTextChange(hotel, 'cashierName', e.target.value)} /></TableCell>
                                                 <TableCell><Input type="number" className="min-w-[80px]" value={revenue.cars || ''} onChange={e => handleRevenueChange(hotel, 'cars', e.target.value)} /></TableCell>
                                                 <TableCell><Input type="number" className="min-w-[100px]" value={revenue.parking || ''} onChange={e => handleRevenueChange(hotel, 'parking', e.target.value)} /></TableCell>
                                                 <TableCell><Input type="number" className="min-w-[100px]" value={revenue.valet || ''} onChange={e => handleRevenueChange(hotel, 'valet', e.target.value)} /></TableCell>
@@ -87,7 +101,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                         );
                                     })}
                                      <TableRow className="bg-muted/50 font-bold">
-                                        <TableCell>الإجمالي</TableCell>
+                                        <TableCell colSpan={2}>الإجمالي</TableCell>
                                         <TableCell>{Object.values(data.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0)}</TableCell>
                                         <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0).toFixed(2)}</TableCell>
                                         <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0).toFixed(2)}</TableCell>

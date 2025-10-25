@@ -4,118 +4,195 @@ import { CheckCircle2 } from "lucide-react";
 import { ReportData, hotels } from "./Step1DataInput";
 import { RevenueData } from "./Step2TemplateSelection";
 import * as XLSX from 'xlsx';
-
+import { Step3MappingPreview } from "./Step3MappingPreview";
 
 interface Step4ExportProps {
     onReset: () => void;
     reportData: ReportData;
     revenueData: RevenueData;
+    reportId: string;
 }
 
-export function Step4Export({ onReset, reportData, revenueData }: Step4ExportProps) {
+const formatDate = (date: string | Date) => {
+  if (!date) return 'N/A';
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const shiftMap: { [key: string]: string } = {
+  morning: 'صباحية',
+  evening: 'مسائية',
+};
+
+export function Step4Export({ onReset, reportData, revenueData, reportId }: Step4ExportProps) {
     const handlePrint = () => {
-        // This is a simplified print approach. For a perfect print, one might navigate
-        // back to step 3 and trigger print there. But this is good for a direct export.
-        const printContent = document.getElementById("report-preview-for-export");
-        if (printContent) {
-            const printWindow = window.open('', '', 'height=800,width=1000');
-            if (printWindow) {
-                printWindow.document.write('<html><head><title>Print Report</title>');
-                // You might need to link to your CSS file here for proper styling
-                printWindow.document.write('<link rel="stylesheet" href="/globals.css" type="text/css" />');
-                printWindow.document.write('</head><body dir="rtl">');
-                printWindow.document.write(printContent.innerHTML);
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
-                printWindow.focus();
-                setTimeout(() => { // Timeout to allow content to load
-                    printWindow.print();
-                    printWindow.close();
-                }, 500);
-            }
-        }
+        window.print();
     };
 
-    const handleExport = () => {
-        const wb = XLSX.utils.book_new();
+    const handleExcelExport = () => {
+        // 1. Define Styles
+        const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 14 }, fill: { fgColor: { rgb: "1E293B" } }, alignment: { horizontal: "center", vertical: "center" } };
+        const subHeaderStyle = { font: { bold: true, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "F1F5F9" } }, alignment: { horizontal: "center" } };
+        const totalRowStyle = { font: { bold: true }, fill: { fgColor: { rgb: "E2E8F0" } } };
+        const boldText = { font: { bold: true } };
+        const centeredText = { alignment: { horizontal: "center" } };
+        const rightAligned = { alignment: { horizontal: "right" } };
 
-        const totals = {
-            cars: Object.values(revenueData.revenueByHotel).reduce((acc, hotel) => acc + (hotel.cars || 0), 0),
-            parking: Object.values(revenueData.revenueByHotel).reduce((acc, hotel) => acc + (hotel.parking || 0), 0),
-            valet: Object.values(revenueData.revenueByHotel).reduce((acc, hotel) => acc + (hotel.valet || 0), 0),
-            total: Object.values(revenueData.revenueByHotel).reduce((acc, hotel) => acc + (hotel.parking || 0) + (hotel.valet || 0), 0),
-        };
+        // 2. Prepare Data
+        const revenueTotal = Object.values(revenueData.revenueByHotel).reduce((acc, { parking, valet }) => acc + (parking || 0) + (valet || 0), 0);
         const paymentTotal = (revenueData.totalCash || 0) + (revenueData.totalNetwork || 0);
-        const difference = totals.total - paymentTotal;
+        const difference = revenueTotal - paymentTotal;
+        const totalCars = Object.values(revenueData.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0);
+        const totalParking = Object.values(revenueData.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0);
+        const totalValet = Object.values(revenueData.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0);
 
-        // Sheet 1: Report Details
-        const ws1_data = [
-            ["تقرير صف السيارات اليومي"],
-            [],
-            ["التاريخ:", reportData.date],
-            ["اسم المشروع:", reportData.projectName],
-            ["المشرف:", reportData.supervisorName],
-            [],
-            ["الحضور والغياب"],
-            ["عدد الحضور:", reportData.attendanceCount],
-            ["عدد الغياب:", reportData.absenceCount],
-            [],
-            ["ملاحظات:", reportData.notes]
+        // 3. Worksheet Data Structure
+        let reportInfoRows = [
+            [
+                { v: "التاريخ", t: 's', s: boldText }, { v: formatDate(reportData.date), t: 's' },
+                { v: "المشرف", t: 's', s: boldText }, { v: reportData.supervisorName, t: 's' },
+            ],
+            [
+                { v: "الحضور", t: 's', s: boldText }, { v: reportData.attendanceCount, t: 'n' },
+                { v: "الغياب", t: 's', s: boldText }, { v: reportData.absenceCount, t: 'n' },
+            ],
         ];
-        const ws1 = XLSX.utils.aoa_to_sheet(ws1_data);
-        XLSX.utils.book_append_sheet(wb, ws1, "تفاصيل التقرير");
 
-        // Sheet 2: Revenue
-        const ws2_data = [
-            ["الموقع", "عدد السيارات", "مبالغ المواقف (ر.س)", "مبالغ الفاليه (ر.س)", "المجموع (ر.س)"],
-            ...hotels.map(hotel => {
-                const data = revenueData.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0 };
-                return [
-                    hotel,
-                    data.cars,
-                    data.parking,
-                    data.valet,
-                    (data.parking || 0) + (data.valet || 0)
-                ];
-            }),
-            ["الإجمالي", totals.cars, totals.parking, totals.valet, totals.total],
+        if (reportData.reportType === 'daily' && reportData.shift) {
+            reportInfoRows[0].push({ v: "الوردية", t: 's', s: boldText }, { v: shiftMap[reportData.shift] || reportData.shift, t: 's' });
+        }
+
+        if (reportData.notes) {
+             reportInfoRows.push([{ v: "ملاحظات", t: 's', s: boldText }, { v: reportData.notes, t: 's' }])
+        }
+
+        let ws_data = [
+            [{ v: "تقرير الإيرادات اليومي", t: 's', s: headerStyle }],
+            [{ v: reportData.projectName, t: 's', s: { ...headerStyle, font: { ...headerStyle.font, sz: 12 } } }],
             [],
-            ["تفاصيل إضافية"],
-            ["السيارات المعفاة:", revenueData.exemptedCars],
-            ["سبب الإعفاء:", revenueData.exemptionReason],
-            ["السيارات المطلوبة بالخطأ:", revenueData.mistakeCars],
+            [{ v: "معلومات التقرير", t: 's', s: subHeaderStyle }],
+            ...reportInfoRows,
             [],
-            ["ملخص الدفع"],
-            ["إجمالي الكاش:", revenueData.totalCash],
-            ["إجمالي الشبكة:", revenueData.totalNetwork],
-            ["المجموع:", paymentTotal],
-            ["الفرق:", difference],
+            [{ v: "ملخص الإيرادات", t: 's', s: subHeaderStyle }],
+            [
+                { v: "الموقع", t: 's', s: subHeaderStyle }, { v: "اسم الكاشير", t: 's', s: subHeaderStyle },
+                { v: "السيارات", t: 's', s: subHeaderStyle }, { v: "المواقف (ر.س)", t: 's', s: subHeaderStyle },
+                { v: "الفاليه (ر.س)", t: 's', s: subHeaderStyle }, { v: "المجموع (ر.س)", t: 's', s: subHeaderStyle },
+            ],
         ];
-        const ws2 = XLSX.utils.aoa_to_sheet(ws2_data);
-        XLSX.utils.book_append_sheet(wb, ws2, "تفاصيل الإيرادات");
+
+        // Append revenue rows
+        hotels.forEach(hotel => {
+            const data = revenueData.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0, cashierName: '' };
+            ws_data.push([
+                { v: hotel, t: 's' },
+                { v: data.cashierName || '-', t: 's' },
+                { v: data.cars || 0, t: 'n', s: centeredText },
+                { v: data.parking || 0, t: 'n', s: { numFmt: "#,##0.00" } },
+                { v: data.valet || 0, t: 'n', s: { numFmt: "#,##0.00" } },
+                { v: (data.parking || 0) + (data.valet || 0), t: 'n', s: { numFmt: "#,##0.00", ...boldText, ...rightAligned } },
+            ]);
+        });
+
+        // Append total row
+        ws_data.push([
+            { v: "الإجمالي", t: 's', s: totalRowStyle }, { v: "", t: 's', s: totalRowStyle },
+            { v: totalCars, t: 'n', s: { ...totalRowStyle, ...centeredText } },
+            { v: totalParking, t: 'n', s: { ...totalRowStyle, numFmt: "#,##0.00" } },
+            { v: totalValet, t: 'n', s: { ...totalRowStyle, numFmt: "#,##0.00" } },
+            { v: revenueTotal, t: 'n', s: { ...totalRowStyle, numFmt: "#,##0.00", ...rightAligned } },
+        ]);
+
+        ws_data.push([]);
+
+        // Payment & Details
+        ws_data.push([{ v: "ملخص الدفع والتفاصيل", t: 's', s: subHeaderStyle }]);
+        ws_data.push([
+            { v: "إجمالي الكاش", t: 's', s: boldText }, { v: revenueData.totalCash, t: 'n', s: { numFmt: "#,##0.00 \"ر.س\"" } },
+            { v: "سيارات معفاة", t: 's', s: boldText }, { v: revenueData.exemptedCars || 0, t: 'n' },
+        ]);
+        ws_data.push([
+            { v: "إجمالي الشبكة", t: 's', s: boldText }, { v: revenueData.totalNetwork, t: 'n', s: { numFmt: "#,##0.00 \"ر.س\"" } },
+            { v: "سيارات بالخطأ", t: 's', s: boldText }, { v: revenueData.mistakeCars || 0, t: 'n' },
+        ]);
+        if (revenueData.exemptionReason) {
+            ws_data.push([{}, {}, { v: "سبب الإعفاء", t: 's', s: boldText }, { v: revenueData.exemptionReason, t: 's' }]);
+        }
+
+        ws_data.push([
+            { v: "المجموع المستلم", t: 's', s: totalRowStyle }, 
+            { v: paymentTotal, t: 'n', s: { ...totalRowStyle, numFmt: "#,##0.00 \"ر.س\"" } },
+        ]);
+
+        ws_data.push([]);
+
+        // Financial Difference
+        const diffStyle = { font: { bold: true, color: { rgb: difference !== 0 ? "991B1B" : "065F46" } }, fill: { fgColor: { rgb: difference !== 0 ? "FECACA" : "D1FAE5" } } };
+        ws_data.push([
+            { v: "الفرق المالي", t: 's', s: diffStyle },
+            { v: difference, t: 'n', s: { ...diffStyle, numFmt: `#,##0.00 \"ر.س\"` } }
+        ]);
+        if (difference !== 0 && revenueData.differenceReason) {
+            ws_data.push([{}, { v: `السبب: ${revenueData.differenceReason}`, t: 's' } ]);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+        const merges = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, 
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }, 
+            { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } },
+        ];
         
-        XLSX.writeFile(wb, `Report-${reportData.date}.xlsx`);
+        let currentRow = 4 + reportInfoRows.length;
+        merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 5 } }); // Revenue Summary Title
+        currentRow += hotels.length + 2; // header + data rows + total row
+        merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: 5 } }); // Payment details title
+        if(reportData.notes) {
+             const notesRowIndex = ws_data.findIndex(row => row[0]?.v === "ملاحظات");
+             if(notesRowIndex !== -1) merges.push({ s: { r: notesRowIndex, c: 1 }, e: { r: notesRowIndex, c: 5 } });
+        }
+
+        ws["!merges"] = merges;
+        ws["!cols"] = [ { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 } ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "تقرير الإيرادات");
+        XLSX.writeFile(wb, `تقرير-${formatDate(reportData.date)}.xlsx`);
     };
     
     return (
-        <div className="flex flex-col items-center justify-center h-full text-center">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">التقرير جاهز للتصدير!</h2>
-            <p className="text-muted-foreground mb-8">حمّل التقرير الذي تم إنشاؤه بالصيغة التي تفضلها.</p>
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button size="lg" className="w-full sm:w-auto" onClick={handleExport}>
-                    <Download className="ml-2 h-5 w-5" />
-                    تحميل Excel (.xlsx)
-                </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={handlePrint}>
-                    <Printer className="ml-2 h-5 w-5" />
-                    طباعة التقرير
+        <>
+            <div className="hidden print:block">
+                <Step3MappingPreview 
+                    reportData={reportData} 
+                    revenueData={revenueData} 
+                    reportId={reportId} 
+                />
+            </div>
+
+            <div className="print:hidden flex flex-col items-center justify-center h-full text-center">
+                <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
+                <h2 className="text-2xl font-bold mb-2">التقرير جاهز للتصدير!</h2>
+                <p className="text-muted-foreground mb-8">حمّل التقرير الذي تم إنشاؤه بالصيغة التي تفضلها.</p>
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <Button size="lg" className="w-full sm:w-auto" onClick={handleExcelExport}>
+                        <Download className="ml-2 h-5 w-5" />
+                        تحميل Excel (تصميم مميز)
+                    </Button>
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={handlePrint}>
+                        <Printer className="ml-2 h-5 w-5" />
+                        طباعة التقرير
+                    </Button>
+                </div>
+                <Button variant="ghost" onClick={onReset}>
+                    <Repeat className="ml-2 h-4 w-4" />
+                    إنشاء تقرير آخر
                 </Button>
             </div>
-            <Button variant="ghost" onClick={onReset}>
-                <Repeat className="ml-2 h-4 w-4" />
-                إنشاء تقرير آخر
-            </Button>
-        </div>
+        </>
     );
 }
