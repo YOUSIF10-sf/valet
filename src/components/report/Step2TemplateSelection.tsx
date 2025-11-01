@@ -1,10 +1,14 @@
 'use client';
-import { hotels } from './Step1DataInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
+// Define hotels locally to fix the broken import and make the component self-contained.
+const hotels = [
+  "ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"
+];
 
 type HotelRevenue = {
   cars: number;
@@ -26,9 +30,10 @@ export type RevenueData = {
 interface Step2Props {
   data: RevenueData;
   onDataChange: (data: RevenueData) => void;
+  reportType?: string;
 }
 
-export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
+export function Step2TemplateSelection({ data, onDataChange, reportType }: Step2Props) {
 
     const handleRevenueChange = (hotel: string, field: 'cars' | 'parking' | 'valet', value: string) => {
         const numericValue = parseInt(value, 10) || 0;
@@ -60,6 +65,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
     const tableTotal = Object.values(data.revenueByHotel).reduce((acc, { parking, valet }) => acc + (parking || 0) + (valet || 0), 0);
     const cashNetworkTotal = (data.totalCash || 0) + (data.totalNetwork || 0);
     const difference = tableTotal - cashNetworkTotal;
+    const isMonthlyReport = reportType === 'monthly';
 
     return (
         <div className="w-full">
@@ -78,7 +84,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[150px]">الموقع</TableHead>
-                                        <TableHead>اسم الكاشير</TableHead>
+                                        {!isMonthlyReport && <TableHead>اسم الكاشير</TableHead>}
                                         <TableHead>عدد السيارات</TableHead>
                                         <TableHead>مبالغ المواقف (ر.س)</TableHead>
                                         <TableHead>مبالغ الفاليه (ر.س)</TableHead>
@@ -92,7 +98,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                         return (
                                             <TableRow key={hotel}>
                                                 <TableCell className="font-medium">{hotel}</TableCell>
-                                                <TableCell><Input type="text" className="min-w-[120px]" value={revenue.cashierName || ''} onChange={e => handleRevenueTextChange(hotel, 'cashierName', e.target.value)} /></TableCell>
+                                                {!isMonthlyReport && <TableCell><Input type="text" className="min-w-[120px]" value={revenue.cashierName || ''} onChange={e => handleRevenueTextChange(hotel, 'cashierName', e.target.value)} /></TableCell>}
                                                 <TableCell><Input type="number" className="min-w-[80px]" value={revenue.cars || ''} onChange={e => handleRevenueChange(hotel, 'cars', e.target.value)} /></TableCell>
                                                 <TableCell><Input type="number" className="min-w-[100px]" value={revenue.parking || ''} onChange={e => handleRevenueChange(hotel, 'parking', e.target.value)} /></TableCell>
                                                 <TableCell><Input type="number" className="min-w-[100px]" value={revenue.valet || ''} onChange={e => handleRevenueChange(hotel, 'valet', e.target.value)} /></TableCell>
@@ -101,7 +107,7 @@ export function Step2TemplateSelection({ data, onDataChange }: Step2Props) {
                                         );
                                     })}
                                      <TableRow className="bg-muted/50 font-bold">
-                                        <TableCell colSpan={2}>الإجمالي</TableCell>
+                                        <TableCell colSpan={isMonthlyReport ? 1 : 2}>الإجمالي</TableCell>
                                         <TableCell>{Object.values(data.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0)}</TableCell>
                                         <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0).toFixed(2)}</TableCell>
                                         <TableCell className="font-mono">{Object.values(data.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0).toFixed(2)}</TableCell>

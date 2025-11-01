@@ -89,7 +89,7 @@ export function ReportCreationWizard() {
       case 1:
         return <Step1DataInput />;
       case 2:
-        return <Step2TemplateSelection data={revenueData} onDataChange={setRevenueData} />;
+        return <Step2TemplateSelection data={revenueData} onDataChange={setRevenueData} reportType={reportData.reportType} />;
       case 3:
         // Pass the collected data to the preview component
         return <Step3MappingPreview reportData={reportData} revenueData={revenueData} reportId={reportId} />;
@@ -103,13 +103,15 @@ export function ReportCreationWizard() {
   return (
      <FormProvider {...methods}>
       <div className="space-y-8">
-        <StepIndicator steps={steps} currentStep={currentStep} />
+        <div className="print:hidden">
+            <StepIndicator steps={steps} currentStep={currentStep} />
+        </div>
         <Card className="p-6 rounded-lg shadow-sm min-h-[450px] flex flex-col transition-opacity duration-300" style={{opacity: isPending ? 0.7 : 1}}>
           <div className="flex-1">
             {renderStep()}
           </div>
         </Card>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center print:hidden">
           {currentStep > 1 && currentStep < steps.length ? (
             <Button variant="outline" onClick={goToPrev}>
               رجوع
