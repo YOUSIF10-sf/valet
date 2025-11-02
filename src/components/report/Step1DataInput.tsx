@@ -114,7 +114,7 @@ export function Step1DataInput() {
                 name="shift"
                 control={control}
                 render={({ field }) => (
-                  <Select dir="rtl" onValuechange={field.onChange} value={field.value}>
+                  <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger id="shift">
                       <SelectValue placeholder="اختر الوردية" />
                     </SelectTrigger>

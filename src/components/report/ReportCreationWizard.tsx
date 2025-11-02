@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { StepIndicator } from "@/components/report/StepIndicator";
 import { Step1DataInput, ReportData } from "@/components/report/Step1DataInput";
 import { Step2TemplateSelection, RevenueData } from "@/components/report/Step2TemplateSelection";
@@ -19,21 +19,23 @@ const steps = [
   { id: 4, name: "تصدير" },
 ];
 
+const initialRevenueData: RevenueData = {
+  revenueByHotel: {},
+  exemptedCars: 0,
+  exemptionReason: "",
+  mistakeCars: 0,
+  totalCash: 0,
+  totalNetwork: 0,
+  differenceReason: "",
+};
+
 export function ReportCreationWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPending, startTransition] = useTransition();
   const [reportId] = useState(`VAL-${Date.now()}`); // Unique ID for the report
 
   // State for Step 2 data
-  const [revenueData, setRevenueData] = useState<RevenueData>({
-    revenueByHotel: {},
-    exemptedCars: 0,
-    exemptionReason: "",
-    mistakeCars: 0,
-    totalCash: 0,
-    totalNetwork: 0,
-    differenceReason: "",
-  });
+  const [revenueData, setRevenueData] = useState<RevenueData>(initialRevenueData);
 
   const methods = useForm<ReportData>({
     resolver: zodResolver(reportSchema),
@@ -48,8 +50,13 @@ export function ReportCreationWizard() {
     },
   });
 
-  // Watch for changes in the form data of Step 1
   const reportData = methods.watch();
+  const reportType = methods.watch("reportType");
+
+  // FIX: Reset revenue data when the report type changes to prevent data mismatch.
+  useEffect(() => {
+    setRevenueData(initialRevenueData);
+  }, [reportType]);
 
   const changeStep = (step: number) => {
     startTransition(() => {
@@ -72,15 +79,7 @@ export function ReportCreationWizard() {
   const goToPrev = () => changeStep(Math.max(currentStep - 1, 1));
   const reset = () => {
     methods.reset();
-    setRevenueData({
-        revenueByHotel: {},
-        exemptedCars: 0,
-        exemptionReason: "",
-        mistakeCars: 0,
-        totalCash: 0,
-        totalNetwork: 0,
-        differenceReason: "",
-    });
+    setRevenueData(initialRevenueData);
     changeStep(1);
   };
   

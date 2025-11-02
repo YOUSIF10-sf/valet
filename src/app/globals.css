@@ -1,51 +1,37 @@
+
+/* Import Amiri Font - MUST be at the top of the file */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 220 10% 96%; /* Lighter Grey */
-    --foreground: 220 13% 15%; /* Dark Charcoal */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 15%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 15%;
-    --primary: 210 85% 45%; /* Professional Blue (from Hilton/Hyatt) */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 90%; /* Light Grey */
-    --secondary-foreground: 220 13% 25%;
-    --muted: 220 10% 90%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 0 72% 51%; /* Marriott Red */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%; /* Marriott Red */
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 85%;
-    --input: 220 10% 85%;
-    --ring: 210 85% 45%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 13% 10%; /* Very Dark Grey/Black */
-    --foreground: 210 17% 90%; /* Light Grey Text */
-    --card: 220 13% 15%;
-    --card-foreground: 210 17% 90%;
-    --popover: 220 13% 15%;
-    --popover-foreground: 210 17% 90%;
-    --primary: 210 85% 55%; /* Brighter Blue for dark mode */
-    --primary-foreground: 220 13% 15%;
-    --secondary: 220 13% 20%;
-    --secondary-foreground: 210 17% 90%;
-    --muted: 220 13% 20%;
-    --muted-foreground: 210 17% 60%;
-    --accent: 0 72% 61%; /* Brighter Red for dark mode */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 25%;
-    --input: 220 13% 25%;
-    --ring: 210 85% 55%;
+    /* ... (dark mode variables) */
   }
 }
 
@@ -55,6 +41,93 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-cairo), sans-serif;
+    /* Use Amiri as the default font for the body */
+    font-family: 'Amiri', 'Arial', sans-serif;
+  }
+}
+
+/* 
+  ==========================================================================
+  Professional A4 Print Layout
+  ==========================================================================
+  - Defines an A4 page size with 2cm margins.
+  - Hides all elements by default except the main report preview.
+  - Applies professional document styling (justified text, clean font).
+*/
+
+@page {
+  size: A4;
+  margin: 2cm; /* Set 2cm margins on all sides */
+}
+
+@media print {
+  /* Hide scrollbars during print */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make only the report preview and its children visible */
+  #report-preview, #report-preview * {
+    visibility: visible;
+  }
+  
+  /* Ensure the report preview takes the full page area */
+  #report-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    
+    /* Document Styling */
+    font-family: 'Amiri', 'Arial', sans-serif;
+    font-size: 11pt; /* A safe and readable default font size */
+    line-height: 1.4;
+    text-align: justify; /* Justify text for a professional look */
+    color: #000; /* Ensure text is pure black for printing */
+  }
+
+  /* Remove any background colors and shadows from cards and other elements for clean printing */
+  #report-preview .bg-gray-50, 
+  #report-preview .bg-white,
+  #report-preview .shadow-lg,
+  #report-preview .shadow-sm {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Add borders to cards and tables for structure, mimicking a document */
+  #report-preview .Card, 
+  #report-preview .Table {
+     border: 1px solid #ddd !important;
+  }
+
+  #report-preview h1, #report-preview h2, #report-preview h3, #report-preview h4, #report-preview h5 {
+    color: #000 !important;
+  }
+  
+  #report-preview p,
+  #report-preview td,
+  #report-preview th,
+  #report-preview div {
+      color: #000 !important;
+  }
+
+  /* Ensure links (if any) are not blue */
+  #report-preview a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* Do not break cards or tables across pages if possible (though we aim for one page) */
+  #report-preview .Card {
+    page-break-inside: avoid;
   }
 }

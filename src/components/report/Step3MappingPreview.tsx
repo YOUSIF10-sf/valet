@@ -1,243 +1,161 @@
 'use client';
-import Image from 'next/image';
-import { RevenueData } from './Step2TemplateSelection';
-import { ReportData } from './Step1DataInput';
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-    Calendar, User, Users, ClipboardList, Clock, Landmark, HandCoins, 
-    FileText, AlertTriangle, CheckCircle2, TrendingUp
-} from 'lucide-react';
 
-// Props interface
+import Image from "next/image";
+import { ReportData } from "./Step1DataInput";
+import { RevenueData } from "./Step2TemplateSelection";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Printer, FileSpreadsheet } from "lucide-react";
+import { exportToExcel } from "@/lib/exportToExcel";
+
+const hotels = ["ماريوت", "دبل تري", "هيلتون مؤتمرات", "هيلتون أجنحة", "حياة ريجنسي", "كونراد", "جميرا"];
+const shiftMap: { [key: string]: string } = { morning: 'صباحية', evening: 'مسائية' };
+
 interface Step3Props {
-  reportData: ReportData;
-  revenueData: RevenueData;
-  reportId: string;
+    reportData: ReportData;
+    revenueData: RevenueData;
+    reportId: string;
 }
 
-// Helper Functions
 const formatDate = (date: string | Date) => {
-  if (!date) return 'N/A';
-  const d = new Date(date);
-  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-};
-const shiftMap: { [key: string]: string } = { morning: 'صباحية', evening: 'مسائية' };
-const monthMap: { [key: string]: string } = {
-  '1': 'يناير', '2': 'فبراير', '3': 'مارس', '4': 'أبريل', '5': 'مايو', '6': 'يونيو',
-  '7': 'يوليو', '8': 'أغسطس', '9': 'سبتمبر', '10': 'أكتوبر', '11': 'نوفمبر', '12': 'ديسمبر'
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-// --- Main Component --- //
 export function Step3MappingPreview({ reportData, revenueData, reportId }: Step3Props) {
-
-    if (!revenueData || !revenueData.revenueByHotel) {
-        return <div className="p-8 text-center text-gray-500">لا توجد بيانات لعرضها.</div>;
-    }
-
-    // Calculations
+    
     const tableTotal = Object.values(revenueData.revenueByHotel).reduce((acc, { parking, valet }) => acc + (parking || 0) + (valet || 0), 0);
-    const difference = tableTotal - ((revenueData.totalCash || 0) + (revenueData.totalNetwork || 0));
-    const totalCars = Object.values(revenueData.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0);
-    const totalParking = Object.values(revenueData.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0);
-    const totalValet = Object.values(revenueData.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0);
+    const cashNetworkTotal = (revenueData.totalCash || 0) + (revenueData.totalNetwork || 0);
+    const difference = tableTotal - cashNetworkTotal;
     const isMonthlyReport = reportData.reportType === 'monthly';
 
+    const handlePrint = () => window.print();
+    const handleExport = () => exportToExcel(reportData, revenueData, reportId);
+
     return (
-        <>
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-                body {
-                    font-family: 'Tajawal', sans-serif;
-                }
-                @media print {
-                    /* This is a browser requirement to ensure backgrounds and colors are printed. */
-                    body {
-                        -webkit-print-color-adjust: exact !important;
-                        color-adjust: exact !important;
-                    }
-                }
-            `}</style>
-
-            <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 bg-gray-50">
-                 <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 border-2 border-gray-100">
-                    <header className="bg-slate-800 text-white rounded-t-xl p-6 flex justify-between items-center">
-                        <div>
-                           <h1 className="font-bold text-3xl">{reportData.projectName}</h1>
-                           <p className="text-lg text-slate-300 mt-1">{isMonthlyReport ? "تقرير الإيرادات الشهري" : "تقرير الإيرادات اليومي"}</p>
-                        </div>
-                        <div className="w-40 h-auto">
-                             <Image src="/logo.png" alt="شعار سهل" width={2048} height={654} layout="responsive" className="filter brightness-0 invert"/>
-                        </div>
-                    </header>
-
-                    <main className="p-2 sm:p-4 space-y-6">
-                        <section>
-                            <SectionTitle icon={ClipboardList} title="تفاصيل التقرير" />
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                {isMonthlyReport ? (
-                                    <>
-                                        <InfoRow label="الشهر" value={monthMap[reportData.month || ''] || 'N/A'} icon={Calendar} />
-                                        <InfoRow label="السنة" value={reportData.year || 'N/A'} icon={Calendar} />
-                                    </>
-                                ) : (
-                                    <>
-                                        <InfoRow label="تاريخ التقرير" value={formatDate(reportData.date)} icon={Calendar} />
-                                        <InfoRow label="الوردية" value={shiftMap[reportData.shift || ''] || 'N/A'} icon={Clock} />
-                                    </>
-                                )}
-                                <InfoRow label="اسم المشرف" value={reportData.supervisorName} icon={User} />
-                                {!isMonthlyReport && <InfoRow label="عدد الحضور" value={reportData.attendanceCount} icon={Users} />}
-                                {!isMonthlyReport && <InfoRow label="عدد الغياب" value={reportData.absenceCount} icon={Users} />}
-                            </div>
-                        </section>
-                        
-                        <Separator />
-
-                        <section>
-                            <SectionTitle icon={Landmark} title="ملخص إيرادات المواقع" />
-                            <div className="mt-4 border rounded-lg overflow-hidden">
-                                <Table>
-                                    <TableHeader className="bg-slate-100/70">
-                                        <TableRow>
-                                            <TableHead className="font-bold text-slate-600">الموقع</TableHead>
-                                            {!isMonthlyReport && <TableHead className="font-bold text-slate-600">الكاشير</TableHead>}
-                                            <TableHead className="text-center font-bold text-slate-600">السيارات</TableHead>
-                                            <TableHead className="text-center font-bold text-slate-600">إيراد المواقف</TableHead>
-                                            <TableHead className="text-center font-bold text-slate-600">إيراد الفاليه</TableHead>
-                                            <TableHead className="text-right font-bold text-slate-600">الإجمالي</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {Object.entries(revenueData.revenueByHotel).map(([hotel, revenue]) => (
-                                            <TableRow key={hotel} className="border-slate-100">
-                                                <TableCell className="font-medium">{hotel}</TableCell>
-                                                {!isMonthlyReport && <TableCell>{revenue.cashierName || '-'}</TableCell>}
-                                                <TableCell className="text-center font-mono">{revenue.cars || 0}</TableCell>
-                                                <TableCell className="text-center font-mono">{`ر.س ${(revenue.parking || 0).toFixed(2)}`}</TableCell>
-                                                <TableCell className="text-center font-mono">{`ر.س ${(revenue.valet || 0).toFixed(2)}`}</TableCell>
-                                                <TableCell className="text-right font-mono font-bold">{`ر.س ${((revenue.parking || 0) + (revenue.valet || 0)).toFixed(2)}`}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                    <TotalRow isMonthly={isMonthlyReport} cars={totalCars} parking={totalParking} valet={totalValet} total={tableTotal} />
-                                </Table>
-                            </div>
-                        </section>
-
-                        <Separator />
-
-                        <section>
-                             <SectionTitle icon={HandCoins} title="الملخص المالي والملاحظات" />
-                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-                                <div className="lg:col-span-2 space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FinancialSummaryItem label="إجمالي الكاش" value={revenueData.totalCash} icon={TrendingUp} color="blue" />
-                                        <FinancialSummaryItem label="إجمالي الشبكة" value={revenueData.totalNetwork} icon={TrendingUp} color="purple" />
-                                    </div>
-                                    <DifferenceCard difference={difference} reason={revenueData.differenceReason} />
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <NotesCard title="تفاصيل إضافية" items={[
-                                        `سيارات معفاة: ${revenueData.exemptedCars || 0}`,
-                                        `سيارات بالخطأ: ${revenueData.mistakeCars || 0}`,
-                                        revenueData.exemptionReason ? `سبب الإعفاء: ${revenueData.exemptionReason}` : null
-                                    ]} icon={FileText} />
-                                </div>
-
-                                {reportData.notes && (
-                                    <div className="lg:col-span-3">
-                                        <NotesCard title="ملاحظات المشرف" content={reportData.notes} icon={FileText} />
-                                    </div>
-                                )}
-                             </div>
-                        </section>
-                    </main>
-                    
-                    <div className="hidden print:block pt-4 mt-4 border-t text-center text-xs text-slate-500">
-                        <p>تقرير رقم: {reportId} | تم إنشاؤه بتاريخ: {formatDate(new Date())} | © {new Date().getFullYear()} {reportData.projectName}</p>
-                    </div>
-                </div>
+        <div id="report-preview" className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto font-sans print:shadow-none print:p-0 print:max-w-none print:rounded-none">
+            {/* Action Buttons - Hidden in Print View */}
+            <div className="print:hidden flex justify-end items-center gap-2 mb-6">
+                 <Button onClick={handleExport} variant="outline">
+                    <FileSpreadsheet className="ml-2 h-5 w-5" />
+                    تصدير Excel
+                </Button>
+                <Button onClick={handlePrint} variant="outline">
+                    <Printer className="ml-2 h-5 w-5" />
+                    طباعة التقرير
+                </Button>
             </div>
-        </>
+
+            {/* Report Header */}
+            <header className="flex justify-between items-start pb-4 border-b-2 border-gray-100 print:border-b-black">
+                <div className="text-right">
+                    <h1 className="text-3xl print:text-2xl font-bold text-gray-800">{`تقرير الإيرادات - ${isMonthlyReport ? 'شهري' : 'يومي'}`}</h1>
+                    <p className="text-md text-gray-500">{reportData.projectName}</p>
+                </div>
+                <div className="text-left flex flex-col items-end">
+                    <Image src="/logo.png" alt="شعار الشركة" width={120} height={40} priority />
+                    <p className="text-sm text-gray-500 mt-2">{formatDate(reportData.date)}</p>
+                </div>
+            </header>
+
+            {/* Report Metadata */}
+            <section className="grid grid-cols-4 gap-4 my-4">
+                 <InfoCard label="المشرف" value={reportData.supervisorName} />
+                 {!isMonthlyReport && <InfoCard label="الوردية" value={shiftMap[reportData.shift || 'morning']} />}
+                 {!isMonthlyReport && <InfoCard label="الحضور" value={reportData.attendanceCount} />}
+                 {!isMonthlyReport && <InfoCard label="الغياب" value={reportData.absenceCount} />}
+                 {isMonthlyReport && <InfoCard label="الشهر" value={reportData.month} />}
+                 {isMonthlyReport && <InfoCard label="السنة" value={reportData.year} />}
+            </section>
+
+            {/* Financial Tables and Summaries */}
+            <section className="space-y-4">
+                <Card className="print:border-gray-400">
+                    <CardHeader className="p-3"><CardTitle className="text-lg">تفاصيل الإيرادات</CardTitle></CardHeader>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>الموقع</TableHead>
+                                    {!isMonthlyReport && <TableHead>الكاشير</TableHead>}
+                                    <TableHead>عدد السيارات</TableHead>
+                                    <TableHead>مبالغ المواقف</TableHead>
+                                    <TableHead>مبالغ الفاليه</TableHead>
+                                    <TableHead className="text-right">المجموع</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {hotels.map(hotel => {
+                                    const revenue = revenueData.revenueByHotel[hotel] || { cars: 0, parking: 0, valet: 0, cashierName: '' };
+                                    const total = (revenue.parking || 0) + (revenue.valet || 0);
+                                    return (
+                                        <TableRow key={hotel} className="text-xs">
+                                            <TableCell className="font-medium p-2">{hotel}</TableCell>
+                                            {!isMonthlyReport && <TableCell className="p-2">{revenue.cashierName || '-'}</TableCell>}
+                                            <TableCell className="p-2">{revenue.cars || 0}</TableCell>
+                                            <TableCell className="p-2">{(revenue.parking || 0).toFixed(2)}</TableCell>
+                                            <TableCell className="p-2">{(revenue.valet || 0).toFixed(2)}</TableCell>
+                                            <TableCell className="text-right font-mono p-2">{total.toFixed(2)}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                                <TableRow className="bg-gray-50 font-bold text-gray-700 text-sm">
+                                    <TableCell className="p-2" colSpan={isMonthlyReport ? 1 : 2}>الإجمالي</TableCell>
+                                    <TableCell className="p-2">{Object.values(revenueData.revenueByHotel).reduce((acc, { cars }) => acc + (cars || 0), 0)}</TableCell>
+                                    <TableCell className="font-mono p-2">{Object.values(revenueData.revenueByHotel).reduce((acc, { parking }) => acc + (parking || 0), 0).toFixed(2)}</TableCell>
+                                    <TableCell className="font-mono p-2">{Object.values(revenueData.revenueByHotel).reduce((acc, { valet }) => acc + (valet || 0), 0).toFixed(2)}</TableCell>
+                                    <TableCell className="text-right font-mono p-2">{tableTotal.toFixed(2)}</TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-2 gap-4">
+                   <SummaryCard title="ملخص الإيرادات">
+                        <SummaryRow label="إجمالي إيراد الجدول" value={tableTotal.toFixed(2)} />
+                        <SummaryRow label="إجمالي المدفوعات (كاش + شبكة)" value={cashNetworkTotal.toFixed(2)} />
+                        <Separator className="my-2"/>
+                        <SummaryRow 
+                            label="الفرق" 
+                            value={difference.toFixed(2)} 
+                            valueClass={difference !== 0 ? 'text-destructive' : 'text-green-500'} 
+                        />
+                        {difference !== 0 && <p className="text-xs text-gray-500 pt-1"><strong>السبب:</strong> {revenueData.differenceReason || 'غير محدد'}</p>}
+                    </SummaryCard>
+                    
+                    <SummaryCard title="تفاصيل الدفع">
+                        <SummaryRow label="إجمالي الكاش" value={(revenueData.totalCash || 0).toFixed(2)} />
+                        <SummaryRow label="إجمالي الشبكة" value={(revenueData.totalNetwork || 0).toFixed(2)} />
+                    </SummaryCard>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <Card className="print:border-gray-400"><CardHeader className="p-3"><CardTitle className="text-base">معلومات إضافية</CardTitle></CardHeader><CardContent className="p-3 space-y-2 text-sm"><p>السيارات المعفاة: {revenueData.exemptedCars || 0}</p><p>السيارات المطلوبة بالخطأ: {revenueData.mistakeCars || 0}</p></CardContent></Card>
+                    {reportData.notes && <Card className="print:border-gray-400"><CardHeader className="p-3"><CardTitle className="text-base">ملاحظات</CardTitle></CardHeader><CardContent className="p-3"><p className="text-sm whitespace-pre-wrap">{reportData.notes}</p></CardContent></Card>}
+                </div>
+            </section>
+        </div>
     );
 }
 
-// --- Reusable Sub-components --- //
-
-const SectionTitle = ({ icon: Icon, title }: { icon: React.ElementType, title: string }) => (
-    <div className="flex items-center gap-3">
-        <Icon className="w-7 h-7 text-slate-500" />
-        <h2 className="font-bold text-2xl text-slate-700">{title}</h2>
+const InfoCard = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="bg-gray-50 print:border print:border-gray-400 p-2 rounded-lg text-center">
+        <p className="text-xs text-gray-500 font-semibold">{label}</p>
+        <p className="text-lg font-bold text-gray-800">{value}</p>
     </div>
 );
 
-const InfoRow = ({ label, value, icon: Icon }: { label: string, value: any, icon: React.ElementType }) => (
-    <div className="bg-slate-50/70 border rounded-lg p-3 flex items-center gap-3">
-        <Icon className="w-5 h-5 text-slate-400" />
-        <div>
-            <p className="text-sm text-slate-500">{label}</p>
-            <strong className="text-md text-slate-800 font-bold">{value}</strong>
-        </div>
-    </div>
+const SummaryCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <Card className="print:border-gray-400"><CardHeader className="p-3"><CardTitle className="text-base">{title}</CardTitle></CardHeader><CardContent className="p-3 space-y-1">{children}</CardContent></Card>
 );
 
-const TotalRow = ({ isMonthly, cars, parking, valet, total }: any) => (
-    <TableRow className="bg-slate-100 font-bold text-slate-800 text-md">
-        <TableCell colSpan={isMonthly ? 1 : 2} className="py-3">الإجمالي النهائي</TableCell>
-        <TableCell className="text-center font-mono py-3">{cars}</TableCell>
-        <TableCell className="text-center font-mono py-3">{`ر.س ${parking.toFixed(2)}`}</TableCell>
-        <TableCell className="text-center font-mono py-3">{`ر.س ${valet.toFixed(2)}`}</TableCell>
-        <TableCell className="text-right font-mono py-3">{`ر.س ${total.toFixed(2)}`}</TableCell>
-    </TableRow>
-);
-
-const FinancialSummaryItem = ({ label, value, icon: Icon, color }: { label: string, value: number, icon: React.ElementType, color: 'blue' | 'purple' }) => {
-    const colors = {
-        blue: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' },
-        purple: { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200' }
-    };
-    return (
-        <div className={`border rounded-lg p-4 ${colors[color].bg} ${colors[color].border}`}>
-            <div className="flex items-center gap-2">
-                <Icon className={`w-5 h-5 ${colors[color].text}`} />
-                <p className={`text-sm font-semibold ${colors[color].text}`}>{label}</p>
-            </div>
-            <p className={`font-extrabold text-2xl mt-2 ${colors[color].text}`}>{`ر.س ${value.toFixed(2)}`}</p>
-        </div>
-    );
-};
-
-const DifferenceCard = ({ difference, reason }: { difference: number, reason?: string }) => {
-    const isZero = difference === 0;
-    const color = isZero ? 'green' : 'red';
-    const Icon = isZero ? CheckCircle2 : AlertTriangle;
-    const title = isZero ? 'لا يوجد فرق مالي' : (difference > 0 ? 'يوجد فائض' : 'يوجد عجز');
-     const colors = {
-        green: { bg: 'bg-green-50', text: 'text-green-800', border: 'border-green-200' },
-        red: { bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-200' },
-    };
-
-    return (
-        <div className={`border rounded-lg p-4 text-center ${colors[color].bg} ${colors[color].border}`}>
-            <Icon className={`w-10 h-10 mx-auto ${colors[color].text}`} />
-            <h3 className={`font-bold text-xl mt-2 ${colors[color].text}`}>{title}</h3>
-            <p className={`font-mono font-extrabold text-3xl my-1 ${colors[color].text}`}>{`${difference.toFixed(2)}`}<span className="text-xl"> ر.س</span></p>
-            {reason && !isZero && <p className="text-xs text-slate-600 mt-2 whitespace-pre-wrap break-words"><strong>السبب:</strong> {reason}</p>}
-        </div>
-    );
-};
-
-const NotesCard = ({ title, content, items, icon: Icon }: { title: string, content?: string, items?: (string|null)[], icon: React.ElementType }) => (
-    <div className="bg-slate-50/70 border rounded-lg p-4 h-full">
-        <div className="flex items-center gap-2">
-             <Icon className="w-5 h-5 text-slate-500" />
-             <h3 className="font-bold text-slate-700 text-md">{title}</h3>
-        </div>
-        <div className="text-sm text-slate-600 mt-3 pl-1 space-y-2">
-            {content && <p className="whitespace-pre-wrap break-words">{content}</p>}
-            {items && <ul className="list-disc list-inside space-y-1">{items.filter(i => i).map((item, i) => <li key={i} className="whitespace-pre-wrap break-words">{item}</li>)}</ul>}
-        </div>
+const SummaryRow = ({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) => (
+    <div className="flex justify-between items-center text-sm">
+        <p className="text-gray-600">{label}:</p>
+        <p className={`font-mono font-semibold ${valueClass || 'text-gray-800'}`}>{value} ر.س</p>
     </div>
 );
