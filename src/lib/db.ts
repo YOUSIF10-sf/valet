@@ -4,10 +4,10 @@ const url = process.env.TURSO_DATABASE_URL;
 const authToken = process.env.TURSO_AUTH_TOKEN;
 
 if (!url) {
-  throw new Error("TURSO_DATABASE_URL is not defined in environment variables");
+  console.warn("⚠️ TURSO_DATABASE_URL is not defined. Database features will not work until environment variables are configured.");
 }
 
 export const db = createClient({
-  url: url,
-  authToken: authToken,
+  url: url || "libsql://dummy-url",
+  authToken: authToken || "",
 });
