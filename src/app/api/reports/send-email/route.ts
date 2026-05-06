@@ -35,11 +35,25 @@ export async function POST(request: Request) {
 
     // 2. Generate High-Fidelity PDF using Puppeteer
     const chromePath = await findChrome();
-    const browser = await puppeteer.launch({
+    
+    let launchOptions: any = {
       executablePath: chromePath,
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    };
+
+    // If on Vercel, we need specific chromium settings
+    if (process.env.VERCEL) {
+      const chromium = require('@sparticuz/chromium');
+      launchOptions = {
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      };
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     
     const page = await browser.newPage();
     const fullHtml = `
