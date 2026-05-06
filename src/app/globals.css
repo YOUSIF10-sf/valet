@@ -1,0 +1,238 @@
+/* Import Amiri Font - MUST be at the top of the file */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 50% 98%;
+    /* Light grayish blue for a modern, soft base */
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 240 59% 61%;
+    /* More vibrant, modern primary blue (indigo-ish) */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 240 59% 61%;
+    --radius: 0.75rem;
+    /* Slightly rounder edges for a softer modern feel */
+  }
+
+  .dark {
+    /* ... (dark mode variables) */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground min-h-screen;
+    /* Use Amiri as the default font for the body */
+    font-family: 'Amiri', 'Arial', sans-serif;
+    /* Premium subtle gradient background */
+    background: radial-gradient(circle at top left, hsl(210, 50%, 98%), hsl(220, 30%, 95%));
+    background-size: cover;
+    background-attachment: fixed;
+  }
+}
+
+/* 
+  ==========================================================================
+  Ultra-Premium A4 Bilingual Print Layout
+  ==========================================================================
+  - Defines an A4 page with formal margins.
+  - Hides UI elements (buttons, navigation).
+  - Enforces exact color rendering for headers and summaries.
+  - Ensures bilingual text layouts are preserved.
+*/
+
+@page {
+  /* Set standard A4 paper size and professional margins */
+  size: A4 portrait;
+  margin: 1cm;
+  /* Reduced to provide more horizontal and vertical space */
+}
+
+@media print {
+
+  /* Hide scrollbars during print */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make only the report preview and its children visible */
+  #report-preview,
+  #report-preview * {
+    visibility: visible;
+  }
+
+  /* Reset body styles for print */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 9pt !important;
+    /* Smaller baseline font size to prevent overflow */
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ensure the report preview is positioned perfectly at the top left */
+  #report-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Force background colors to print (essential for premium looking headers & cards) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Premium Table Styling for Print */
+  #report-preview table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    background-color: transparent !important;
+    margin-bottom: 12px !important;
+    /* Reduced bottom margin */
+    table-layout: auto !important;
+    /* Allow browser to calculate best fit */
+  }
+
+  #report-preview th {
+    background-color: #f1f5f9 !important;
+    /* Subtle gray/blue header */
+    color: #0f172a !important;
+    /* Dark slate text */
+    font-weight: bold !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    padding: 6px !important;
+    /* Tighter padding for headers */
+    font-size: 9pt !important;
+  }
+
+  #report-preview td {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 4px 6px !important;
+    /* Tighter padding for cells */
+    font-size: 9pt !important;
+  }
+
+  /* Alternating row colors for readability */
+  #report-preview tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  /* Totals row styling */
+  #report-preview tr.bg-gray-50,
+  #report-preview tr.font-bold {
+    background-color: #e2e8f0 !important;
+    border-top: 2px solid #94a3b8 !important;
+    font-weight: 800 !important;
+  }
+
+  /* Elegant Card styling for summaries */
+  #report-preview .Card {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 12px !important;
+    /* Tighter margin */
+    background-color: #fff !important;
+  }
+
+  #report-preview .CardHeader {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    padding: 8px !important;
+    /* Tighter padding */
+  }
+
+  #report-preview .CardContent {
+    padding: 8px !important;
+    /* Tighter padding */
+  }
+
+  /* Info cards (Supervisor, Date, etc) */
+  #report-preview .bg-gray-50,
+  #report-preview .bg-slate-50,
+  #report-preview .bg-slate-100 {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  /* Text styling for print */
+  #report-preview h1,
+  #report-preview h2,
+  #report-preview h3 {
+    color: #1e293b !important;
+    margin-top: 0 !important;
+  }
+
+  #report-preview .text-primary {
+    color: #2563eb !important;
+    /* Specific blue for branded elements */
+  }
+
+  #report-preview .text-destructive {
+    color: #dc2626 !important;
+    /* Clear red for negative values */
+  }
+
+  #report-preview .text-green-500 {
+    color: #16a34a !important;
+  }
+
+  #report-preview .text-gray-500,
+  #report-preview .text-muted-foreground {
+    color: #64748b !important;
+  }
+
+  /* Prevent elements from breaking awkwardly */
+  h1,
+  h2,
+  h3,
+  h4,
+  th,
+  .break-avoid {
+    page-break-after: avoid;
+  }
+
+  table,
+  .Card,
+  .summary-group {
+    page-break-inside: avoid;
+  }
+}
